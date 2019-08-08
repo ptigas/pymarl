@@ -74,6 +74,9 @@ class COMALearner:
 
         advantages = (q_taken - baseline).detach()
 
+        # make sure pi_taken doesn't contain any zeros
+        assert (pi_taken==0.0).any().numpy() == 0
+
         coma_loss = - ((advantages * log_pi_taken) * mask).sum() / mask.sum()
 
         # Optimise agents
