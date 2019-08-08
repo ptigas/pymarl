@@ -5,17 +5,6 @@ from .basic_controller import BasicMAC
 
 # This multi-agent controller with communication shares parameters between agents
 class ComMAC(BasicMAC):
-    def select_actions(self, ep_batch, t_ep, t_env, bs=slice(None), test_mode=False):
-        # Only select actions for the selected batch elements in bs
-        avail_actions = ep_batch["avail_actions"][:, t_ep]
-
-        # communication pool
-        ep_batch.update({'communication': self.communication_pool()}, ts=t_ep)
-
-        agent_outputs = self.forward(ep_batch, t_ep, test_mode=test_mode)
-        chosen_actions = self.action_selector.select_action(agent_outputs[bs], avail_actions[bs], t_env, test_mode=test_mode)
-        return chosen_actions
-
     def communication_pool(self, pool='mean'):
         hidden_states = self.hidden_states.view(self.args.batch_size, self.n_agents, -1)
 
@@ -43,12 +32,13 @@ class ComMAC(BasicMAC):
 
         # Append communication to input
         if self.args.communication_pool:
+            communication = self.communication_pool()
             if t == 0:
                 # for t=0, zero the communication. the hidden state is init to 0 already
                 # but this allows for extra control
-                inputs.append(th.zeros_like(batch["communication"][:, t]).unsqueeze(1).expand(-1, self.n_agents, -1))
+                inputs.append(th.zeros_like(communication).unsqueeze(1).expand(-1, self.n_agents, -1))
             else:
-                inputs.append(batch["communication"][:, t].unsqueeze(1).expand(-1, self.n_agents, -1))
+                inputs.append(communication.unsqueeze(1).expand(-1, self.n_agents, -1))
 
         inputs = th.cat([x.reshape(bs*self.n_agents, -1) for x in inputs], dim=1)
         return inputs
