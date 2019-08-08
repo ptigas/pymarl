@@ -93,6 +93,10 @@ def run_sequential(args, logger):
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": th.uint8},
     }
+
+    if args.communication_pool:
+        scheme["communication"] =  {"vshape": (args.rnn_hidden_dim,)}
+
     groups = {
         "agents": args.n_agents
     }
