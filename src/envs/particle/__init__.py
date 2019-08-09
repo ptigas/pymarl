@@ -1,0 +1,2 @@
+from .particle import Particle
+#from predator_prey_numpy import PredatorPreyCapture as PredatorPreyCaptureCython
